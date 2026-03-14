@@ -1,19 +1,43 @@
 <?php
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\API\AuthController;
+use App\Http\Controllers\API\ApplicantController;
+use App\Http\Controllers\API\ScholarshipController;
+use App\Http\Controllers\API\ApplicationController;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
-|
-*/
+// Public Routes
+Route::prefix('auth')->group(function () {
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/login',    [AuthController::class, 'login']);
+});
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+Route::get('/scholarships',      [ScholarshipController::class, 'index']);
+Route::get('/scholarships/{id}', [ScholarshipController::class, 'show']);
+
+// Protected Routes (need to be logged in)
+Route::middleware('auth:sanctum')->group(function () {
+
+    // Auth
+    Route::post('/auth/logout', [AuthController::class, 'logout']);
+    Route::get('/auth/me',      [AuthController::class, 'me']);
+
+    // Applicants
+    Route::get('/applicants',         [ApplicantController::class, 'index']);
+    Route::post('/applicants',        [ApplicantController::class, 'store']);
+    Route::get('/applicants/{id}',    [ApplicantController::class, 'show']);
+    Route::put('/applicants/{id}',    [ApplicantController::class, 'update']);
+    Route::delete('/applicants/{id}', [ApplicantController::class, 'destroy']);
+
+    // Scholarships
+    Route::post('/scholarships',        [ScholarshipController::class, 'store']);
+    Route::put('/scholarships/{id}',    [ScholarshipController::class, 'update']);
+    Route::delete('/scholarships/{id}', [ScholarshipController::class, 'destroy']);
+
+    // Applications
+    Route::post('/applications/submit',             [ApplicationController::class, 'submit']);
+    Route::get('/applications/my-applications',     [ApplicationController::class, 'myApplications']);
+    Route::get('/applications',                     [ApplicationController::class, 'index']);
+    Route::put('/applications/{id}/approve',        [ApplicationController::class, 'approve']);
+    Route::put('/applications/{id}/reject',         [ApplicationController::class, 'reject']);
 });
