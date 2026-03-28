@@ -93,3 +93,6 @@ Feature List
 4.2 Sub-Feature: Admin Actions
 4.2.1 Action: Approve Application
 4.2.2 Action: Reject Application
+
+
+Added - Admin Full CRUD of accounts
