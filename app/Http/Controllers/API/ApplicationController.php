@@ -9,6 +9,24 @@ use Illuminate\Http\Request;
 
 class ApplicationController extends Controller
 {
+    // Admin and Secretary can view all applications
+    public function index(Request $request)
+    {
+        $user = $request->user();
+
+        if (!$user->isAdmin() && !$user->isSecretary()) {
+            return response()->json(['message' => 'Unauthorized.'], 403);
+        }
+
+        $applications = Application::with('applicant.user', 'scholarship', 'actionedBy')->get();
+
+        return response()->json([
+            'message'      => 'Applications retrieved successfully.',
+            'applications' => $applications,
+        ]);
+    }
+
+    // Student: Submit a scholarship application
     public function submit(Request $request)
     {
         if (!$request->user()->isStudent()) {
@@ -63,6 +81,7 @@ class ApplicationController extends Controller
         ], 201);
     }
 
+    // Student: View own application status
     public function myApplications(Request $request)
     {
         if (!$request->user()->isStudent()) {
@@ -85,24 +104,13 @@ class ApplicationController extends Controller
         ]);
     }
 
-    public function index(Request $request)
-    {
-        if (!$request->user()->isAdmin()) {
-            return response()->json(['message' => 'Unauthorized. Admins only.'], 403);
-        }
-
-        $applications = Application::with('applicant.user', 'scholarship')->get();
-
-        return response()->json([
-            'message'      => 'Applications retrieved successfully.',
-            'applications' => $applications,
-        ]);
-    }
-
+    // Admin and Secretary: Approve an application
     public function approve(Request $request, $id)
     {
-        if (!$request->user()->isAdmin()) {
-            return response()->json(['message' => 'Unauthorized. Admins only.'], 403);
+        $user = $request->user();
+
+        if (!$user->isAdmin() && !$user->isSecretary()) {
+            return response()->json(['message' => 'Unauthorized.'], 403);
         }
 
         $application = Application::with('scholarship')->find($id);
@@ -120,20 +128,24 @@ class ApplicationController extends Controller
         ]);
 
         $application->update([
-            'status'  => 'approved',
-            'remarks' => $validated['remarks'] ?? null,
+            'status'      => 'approved',
+            'remarks'     => $validated['remarks'] ?? null,
+            'actioned_by' => $request->user()->id,
         ]);
 
         return response()->json([
             'message'     => 'Application approved successfully.',
-            'application' => $application->fresh('applicant.user', 'scholarship'),
+            'application' => $application->fresh('applicant.user', 'scholarship', 'actionedBy'),
         ]);
     }
 
+    // Admin and Secretary: Reject an application
     public function reject(Request $request, $id)
     {
-        if (!$request->user()->isAdmin()) {
-            return response()->json(['message' => 'Unauthorized. Admins only.'], 403);
+        $user = $request->user();
+
+        if (!$user->isAdmin() && !$user->isSecretary()) {
+            return response()->json(['message' => 'Unauthorized.'], 403);
         }
 
         $application = Application::find($id);
@@ -151,13 +163,44 @@ class ApplicationController extends Controller
         ]);
 
         $application->update([
-            'status'  => 'rejected',
-            'remarks' => $validated['remarks'] ?? null,
+            'status'      => 'rejected',
+            'remarks'     => $validated['remarks'] ?? null,
+            'actioned_by' => $request->user()->id,
         ]);
 
         return response()->json([
             'message'     => 'Application rejected.',
-            'application' => $application->fresh('applicant.user', 'scholarship'),
+            'application' => $application->fresh('applicant.user', 'scholarship', 'actionedBy'),
+        ]);
+    }
+
+    // Admin and Secretary: Update an application
+    public function update(Request $request, $id)
+    {
+        $user = $request->user();
+
+        if (!$user->isAdmin() && !$user->isSecretary()) {
+            return response()->json(['message' => 'Unauthorized.'], 403);
+        }
+
+        $application = Application::find($id);
+
+        if (!$application) {
+            return response()->json(['message' => 'Application not found.'], 404);
+        }
+
+        $validated = $request->validate([
+            'status'  => 'sometimes|in:pending,approved,rejected',
+            'remarks' => 'nullable|string',
+        ]);
+
+        $application->update(array_merge($validated, [
+            'actioned_by' => $request->user()->id,
+        ]));
+
+        return response()->json([
+            'message'     => 'Application updated successfully.',
+            'application' => $application->fresh('applicant.user', 'scholarship', 'actionedBy'),
         ]);
     }
 }

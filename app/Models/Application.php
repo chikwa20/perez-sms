@@ -12,6 +12,7 @@ class Application extends Model
     protected $fillable = [
         'applicant_id',
         'scholarship_id',
+        'actioned_by',
         'status',
         'remarks',
     ];
@@ -24,5 +25,10 @@ class Application extends Model
     public function scholarship()
     {
         return $this->belongsTo(Scholarship::class);
+    }
+
+    public function actionedBy()
+    {
+        return $this->belongsTo(User::class, 'actioned_by');
     }
 }

@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('applicant_id')->constrained()->onDelete('cascade');
             $table->foreignId('scholarship_id')->constrained()->onDelete('cascade');
+            $table->foreignId('actioned_by')->nullable()->constrained('users')->onDelete('set null');
             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
             $table->text('remarks')->nullable();
             $table->timestamps();

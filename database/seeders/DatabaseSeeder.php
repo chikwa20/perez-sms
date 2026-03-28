@@ -28,6 +28,14 @@ class DatabaseSeeder extends Seeder
             'role'     => 'student',
         ]);
 
+        // Secretary account
+        User::create([
+            'name'     => 'Secretary User',
+            'email'    => 'secretary@sms.com',
+            'password' => Hash::make('password'),
+            'role'     => 'secretary',
+        ]);
+
         // Applicant profile for student
         Applicant::create([
             'user_id'        => $student->id,

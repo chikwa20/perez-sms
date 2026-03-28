@@ -4,6 +4,7 @@ use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\ApplicantController;
 use App\Http\Controllers\API\ScholarshipController;
 use App\Http\Controllers\API\ApplicationController;
+use App\Http\Controllers\API\UserController;
 use Illuminate\Support\Facades\Route;
 
 // Public Routes
@@ -22,6 +23,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::get('/auth/me',      [AuthController::class, 'me']);
 
+    // Users (Admin CRUD)
+    Route::get('/users',         [UserController::class, 'index']);
+    Route::post('/users',        [UserController::class, 'store']);
+    Route::get('/users/{id}',    [UserController::class, 'show']);
+    Route::put('/users/{id}',    [UserController::class, 'update']);
+    Route::delete('/users/{id}', [UserController::class, 'destroy']);
+
     // Applicants
     Route::get('/applicants',         [ApplicantController::class, 'index']);
     Route::post('/applicants',        [ApplicantController::class, 'store']);
@@ -35,9 +43,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/scholarships/{id}', [ScholarshipController::class, 'destroy']);
 
     // Applications
-    Route::post('/applications/submit',             [ApplicationController::class, 'submit']);
-    Route::get('/applications/my-applications',     [ApplicationController::class, 'myApplications']);
-    Route::get('/applications',                     [ApplicationController::class, 'index']);
-    Route::put('/applications/{id}/approve',        [ApplicationController::class, 'approve']);
-    Route::put('/applications/{id}/reject',         [ApplicationController::class, 'reject']);
+    Route::post('/applications/submit',         [ApplicationController::class, 'submit']);
+    Route::get('/applications/my-applications', [ApplicationController::class, 'myApplications']);
+    Route::get('/applications',                 [ApplicationController::class, 'index']);
+    Route::put('/applications/{id}/approve',    [ApplicationController::class, 'approve']);
+    Route::put('/applications/{id}/reject',     [ApplicationController::class, 'reject']);
+    Route::put('/applications/{id}',            [ApplicationController::class, 'update']);  // ADD THIS
 });

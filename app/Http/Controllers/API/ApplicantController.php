@@ -43,6 +43,15 @@ class ApplicantController extends Controller
             'gpa'            => 'required|numeric|min:1.00|max:4.00',
         ]);
 
+        // Check if the user_id belongs to an admin or secretary
+        $userToAdd = \App\Models\User::find($validated['user_id']);
+
+        if ($userToAdd->isAdmin() || $userToAdd->isSecretary()) {
+            return response()->json([
+                'message' => 'Admin and Secretary accounts cannot be added as an applicant.',
+            ], 422);
+        }
+
         $applicant = Applicant::create($validated);
 
         return response()->json([
